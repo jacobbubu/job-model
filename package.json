@@ -63,13 +63,16 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 50,
-        "functions": 60,
-        "lines": 70,
-        "statements": 70
+        "branches": 62,
+        "functions": 70,
+        "lines": 75,
+        "statements": 80
       }
     },
-    "collectCoverage": true
+    "collectCoverage": true,
+    "setupFilesAfterEnv": [
+      "jest-extended"
+    ]
   },
   "prettier": {
     "semi": false,
@@ -89,6 +92,7 @@
     "husky": "^3.0.9",
     "is-scoped": "^2.1.0",
     "jest": "^24.9.0",
+    "jest-extended": "^0.11.2",
     "lint-staged": "^8.2.1",
     "lodash.camelcase": "^4.3.0",
     "npm-name": "^5.5.0",
