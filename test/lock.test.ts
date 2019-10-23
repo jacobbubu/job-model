@@ -1,7 +1,5 @@
 import { JobModel, link } from '../src'
-import { Resolver } from 'dns'
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(() => resolve(), ms))
+import { delay } from './utils'
 
 describe('lock', () => {
   const jobKey = 'download-1'

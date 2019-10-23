@@ -1,4 +1,6 @@
+import 'jest-extended'
 import { JobModel, link } from '../src'
+import { delay } from './utils'
 
 describe('basic', () => {
   const jobKey = 'download-1'
@@ -109,5 +111,65 @@ describe('basic', () => {
       count--
       if (!count) done()
     })
+  })
+
+  it('prevent repeated creation', async () => {
+    const { a, b } = prepare()
+    a.create(jobKey, jobName, meta)
+    expect(() => a.create(jobKey, jobName, meta)).toThrowWithMessage(Error, `Job exists(${jobKey})`)
+
+    await delay(50)
+
+    expect(() => b.create(jobKey, jobName, meta)).toThrowWithMessage(Error, `Job exists(${jobKey})`)
+  })
+
+  it('prevent progress on a non-existing job', async () => {
+    const { a, b } = prepare()
+
+    expect(() => a.progress(jobKey, jobStatus)).toThrowWithMessage(
+      Error,
+      `Job not found(${jobKey})`
+    )
+
+    await delay(50)
+
+    expect(() => b.progress(jobKey, jobStatus)).toThrowWithMessage(
+      Error,
+      `Job not found(${jobKey})`
+    )
+  })
+
+  it('prevent done on a non-existing job', async () => {
+    const { a, b } = prepare()
+
+    expect(() => a.done(jobKey, null, jobResult)).toThrowWithMessage(
+      Error,
+      `Job not found(${jobKey})`
+    )
+
+    await delay(50)
+
+    expect(() => b.done(jobKey, null, jobResult)).toThrowWithMessage(
+      Error,
+      `Job not found(${jobKey})`
+    )
+  })
+
+  it('prevent done on a finished job', async () => {
+    const { a, b } = prepare()
+    a.create(jobKey, jobName, meta)
+    a.done(jobKey, null, jobResult)
+
+    expect(() => a.done(jobKey, null, jobResult)).toThrowWithMessage(
+      Error,
+      `Can not done a job that has finished already(${jobKey})`
+    )
+
+    await delay(50)
+
+    expect(() => b.done(jobKey, null, jobResult)).toThrowWithMessage(
+      Error,
+      `Can not done a job that has finished already(${jobKey})`
+    )
   })
 })
