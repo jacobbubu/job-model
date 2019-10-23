@@ -23,12 +23,16 @@ interface JobData {
   [index: string]: Update | Update[] | undefined
 }
 
+type JobKey = string
+
+interface LockedBy {
+  sourceId: string
+  ts: number
+}
+
 class JobModel extends Scuttlebutt {
-  public store: Record<string, JobData> = {}
-  private _lockedBy = {
-    sourceId: '',
-    ts: 0
-  }
+  public store: Record<JobKey, JobData> = {}
+  private _lockedBy: Record<JobKey, LockedBy> = {}
 
   constructor(opts?: ScuttlebuttOptions | string) {
     super(opts)
@@ -37,14 +41,16 @@ class JobModel extends Scuttlebutt {
   lock(update: Update) {
     const ts = update[UpdateItems.Timestamp]
     const sourceId = update[UpdateItems.SourceId]
-    if (!this._lockedBy.sourceId) {
-      this._lockedBy = {
+    const key = update[UpdateItems.Data][JobTrxItems.Key]
+
+    if (!this._lockedBy[key]) {
+      this._lockedBy[key] = {
         sourceId,
         ts
       }
       return true
-    } else if (this._lockedBy.sourceId === sourceId) {
-      this._lockedBy.ts = ts
+    } else if (this._lockedBy[key].sourceId === sourceId) {
+      this._lockedBy[key].ts = ts
       return true
     } else {
       return false
