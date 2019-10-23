@@ -112,7 +112,6 @@
   },
   "dependencies": {
     "@jacobbubu/debug": "^1.1.4",
-    "@jacobbubu/scuttlebutt-pull": "^1.2.0",
-    "iterate": "^0.1.1"
+    "@jacobbubu/scuttlebutt-pull": "^1.2.1"
   }
 }
