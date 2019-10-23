@@ -93,6 +93,34 @@ class JobModel extends Scuttlebutt {
     return this.store[key]['create']![UpdateItems.Data][JobTrxItems.Arg1]
   }
 
+  toJSON() {
+    const result: Record<JobKey, any> = {}
+    for (let [jobKey, data] of Object.entries(this.store)) {
+      const jobData: Record<string, any> = {}
+      for (let [method, d] of Object.entries(data)) {
+        switch (method) {
+          case 'create':
+            jobData[method] = {
+              name: (d as Update)[UpdateItems.Data][JobTrxItems.Arg1],
+              meta: (d as Update)[UpdateItems.Data][JobTrxItems.Arg2]
+            }
+            break
+          case 'done':
+            jobData[method] = {
+              error: (d as Update)[UpdateItems.Data][JobTrxItems.Arg1],
+              result: (d as Update)[UpdateItems.Data][JobTrxItems.Arg2]
+            }
+            break
+          case 'progress':
+            jobData[method] = (d as Update[]).map(p => p[UpdateItems.Data][JobTrxItems.Arg1])
+            break
+        }
+      }
+      result[jobKey] = jobData
+    }
+    return result
+  }
+
   getJobMeta(key: string) {
     if (!this.store[key]) {
       throw new Error(`Job not found(${key})`)
