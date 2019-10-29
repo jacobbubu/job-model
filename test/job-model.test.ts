@@ -8,6 +8,7 @@ describe('basic', () => {
   const meta = { url: 'https://olddriver.com/your_fav_av.mp4' }
   const jobStatus = '30%'
   const jobResult = 'FIN'
+  const jobError = 'FAIL'
 
   function prepare() {
     const a = new JobModel({ id: 'A' })
@@ -23,6 +24,9 @@ describe('basic', () => {
     const { a, b } = prepare()
     a.create(jobKey, jobName, meta)
 
+    expect(a.count()).toBe(1)
+    expect(a.stats()).toEqual({ count: 1, failed: 0, succeeded: 0 })
+
     let count = 2
 
     b.on(`created`, (key, name, meta) => {
@@ -30,6 +34,7 @@ describe('basic', () => {
       expect(name).toBe(jobName)
       expect(meta).toBe(meta)
       count--
+      expect(b.stats()).toEqual({ count: 1, failed: 0, succeeded: 0 })
       if (!count) done()
     })
 
@@ -79,6 +84,7 @@ describe('basic', () => {
     const { a, b } = prepare()
     a.create(jobKey, jobName, meta)
     a.done(jobKey, null, jobResult)
+    expect(a.stats()).toEqual({ count: 1, failed: 0, succeeded: 1 })
 
     let count = 4
 
@@ -86,6 +92,7 @@ describe('basic', () => {
       expect(key).toBe(jobKey)
       expect(err).toBe(null)
       expect(result).toBe(jobResult)
+      expect(b.stats()).toEqual({ count: 1, failed: 0, succeeded: 1 })
       count--
       if (!count) done()
     })
@@ -110,6 +117,21 @@ describe('basic', () => {
       expect(result).toBe(jobResult)
       count--
       if (!count) done()
+    })
+  })
+
+  it('finish a job with error', done => {
+    const { a, b } = prepare()
+    a.create(jobKey, jobName, meta)
+    a.done(jobKey, jobError)
+    expect(a.stats()).toEqual({ count: 1, failed: 1, succeeded: 0 })
+
+    b.on(`done`, (key, err, result) => {
+      expect(key).toBe(jobKey)
+      expect(err).toBe(jobError)
+      expect(result).toBeNull()
+      expect(b.stats()).toEqual({ count: 1, failed: 1, succeeded: 0 })
+      done()
     })
   })
 

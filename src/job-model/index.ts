@@ -93,6 +93,34 @@ class JobModel extends Scuttlebutt {
     return this.store[key]['create']![UpdateItems.Data][JobTrxItems.Arg1]
   }
 
+  count() {
+    return Object.keys(this.store).length
+  }
+
+  stats() {
+    const stats = {
+      count: 0,
+      failed: 0,
+      succeeded: 0
+    }
+
+    for (let [jobKey, data] of Object.entries(this.store)) {
+      for (let [method, d] of Object.entries(data)) {
+        switch (method) {
+          case 'create':
+            stats.count++
+            break
+          case 'done':
+            const error = (d as Update)[UpdateItems.Data][JobTrxItems.Arg1]
+            const result = (d as Update)[UpdateItems.Data][JobTrxItems.Arg2]
+            error ? stats.failed++ : stats.succeeded++
+            break
+        }
+      }
+    }
+    return stats
+  }
+
   toJSON() {
     const result: Record<JobKey, any> = {}
     for (let [jobKey, data] of Object.entries(this.store)) {
@@ -134,6 +162,10 @@ class JobModel extends Scuttlebutt {
     }
     // result: [err, result]
     return this.store[key]['done']![UpdateItems.Data]
+  }
+
+  jobHasDone(key: string) {
+    return !!(this.store[key] && this.store[key].done)
   }
 
   getJobProgress(key: string) {

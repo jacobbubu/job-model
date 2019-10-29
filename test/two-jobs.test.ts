@@ -37,6 +37,25 @@ describe('two jobs', () => {
     expect(a.getJobName(jobAnotherKey)).toBe(jobAnotherName)
     expect(b.getJobName(jobKey)).toBe(jobName)
     expect(b.getJobName(jobAnotherKey)).toBe(jobAnotherName)
+
+    expect(a.stats()).toEqual({ count: 2, failed: 0, succeeded: 0 })
+    expect(b.stats()).toEqual({ count: 2, failed: 0, succeeded: 0 })
+  })
+
+  it('create two jobs with events', done => {
+    const { a, b } = prepare()
+
+    let counter = 4
+    b.on('created', () => {
+      if (!--counter) done()
+    })
+
+    a.on('created', () => {
+      if (!--counter) done()
+    })
+
+    a.create(jobKey, jobName, meta)
+    a.create(jobAnotherKey, jobAnotherName, anotherMeta)
   })
 
   it('toJSON', async () => {
@@ -65,5 +84,7 @@ describe('two jobs', () => {
     await delay(50)
 
     expect(a.toJSON()).toStrictEqual(expected)
+    expect(a.stats()).toEqual({ count: 2, failed: 1, succeeded: 1 })
+    expect(b.stats()).toEqual({ count: 2, failed: 1, succeeded: 1 })
   })
 })
