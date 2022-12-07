@@ -93,7 +93,7 @@
     "is-scoped": "^2.1.0",
     "jest": "^24.9.0",
     "jest-extended": "^0.11.2",
-    "lint-staged": "^8.2.1",
+    "lint-staged": "^13.1.0",
     "lodash.camelcase": "^4.3.0",
     "npm-name": "^5.5.0",
     "prettier": "^1.18.2",
